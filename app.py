@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
@@ -25,6 +25,7 @@ app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
 # Initialize database
 with app.app_context():
     db.create_all()
+
 
 if __name__ == "__main__":
     serve(app, host="0.0.0.0", port=6969)

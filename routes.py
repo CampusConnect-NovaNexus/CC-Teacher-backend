@@ -5,6 +5,10 @@ from datetime import datetime
 # Create a Blueprint
 teacher_bp = Blueprint('teacher', __name__)
 
+@teacher_bp.route('/test', methods=['GET'])
+def test():
+    return jsonify({'message': 'Server is running'})
+
 @teacher_bp.route('/courses', methods=['GET'])
 def get_courses():
     """Get all courses for a teacher/TA"""
