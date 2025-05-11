@@ -41,12 +41,16 @@ def mark_attendance(course_code, roll_numbers):
         )
         attendance_records.append(attendance)
     
-    # Add all records to database and increment total classes
-    db.session.add_all(attendance_records)
+    # First increment total classes
     course.increment_total_classes()
+    db.session.flush()  # Ensure the increment is saved
+    
+    # Then add attendance records
+    db.session.add_all(attendance_records)
+    db.session.commit()
     
     return [record.json() for record in attendance_records]
-
+    
 def get_student_attendance_stats(student_id, start_date=None, end_date=None):
     """Get attendance statistics for a student"""
     # Base query for attendance records
@@ -67,21 +71,14 @@ def get_student_attendance_stats(student_id, start_date=None, end_date=None):
     if not course:
         raise ValueError(f"Course {student.course_code} not found")
     
-    # Get total classes in the date range
-    total_classes = course.total_classes
-    if start_date or end_date:
-        # If date range is specified, count classes in that range
-        total_classes = Attendance.query.filter(
-            Attendance.student_id.in_([s._id for s in course.students]),
-            Attendance.class_date >= (start_date or datetime.min.replace(tzinfo=timezone.utc)),
-            Attendance.class_date <= (end_date or datetime.max.replace(tzinfo=timezone.utc))
-        ).distinct(Attendance.class_date).count()
+    # Always calculate total classes from attendance records
+    total_classes = get_total_classes(student.course_code, start_date, end_date)
     
     # Get attended classes
     attended_classes = query.count()
     
     # Calculate percentage
-    attendance_percentage = (attended_classes / total_classes * 100) if total_classes > 0 else 0
+    attendance_percentage = (attended_classes / total_classes * 100) if total_classes != 0 else 0
     
     return {
         'student_id': student_id,
@@ -95,3 +92,55 @@ def get_student_attendance_stats(student_id, start_date=None, end_date=None):
         'end_date': end_date.isoformat() if end_date else None
     }
     
+# get attendance stats for a course
+def get_course_attendance_stats(course_code, start_date=None, end_date=None):
+    """Get attendance statistics for a course"""
+    # Base query for attendance records
+    query = Attendance.query.filter(Attendance.student_id.in_([s._id for s in Teacher.query.get(course_code).students]))
+    
+    # Apply date filters if provided
+    if start_date:
+        query = query.filter(Attendance.class_date >= start_date)
+    if end_date:
+        query = query.filter(Attendance.class_date <= end_date)
+    
+    # Get total classes in the date range
+    total_classes = query.distinct(Attendance.class_date).count()
+    
+    # Get attended classes
+    attended_classes = query.count()
+    # get total students
+    total_students = len(Teacher.query.get(course_code).students)
+    
+    # Calculate actual possible attendance (accounting for students who joined later)
+    total_possible_attendance = 0
+    for student in Teacher.query.get(course_code).students:
+        student_attendance = Attendance.query.filter(
+            Attendance.student_id == student._id,
+            Attendance.class_date >= (start_date or datetime.min.replace(tzinfo=timezone.utc)),
+            Attendance.class_date <= (end_date or datetime.max.replace(tzinfo=timezone.utc))
+        ).count()
+        total_possible_attendance += student_attendance
+    
+    attendance_percentage = (attended_classes / total_possible_attendance * 100) if total_possible_attendance > 0 else 0
+    
+    return {
+        'course_code': course_code,
+        'total_classes': total_classes,
+        'attended_classes': attended_classes,
+        'attendance_percentage': round(attendance_percentage, 2),
+        'start_date': start_date.isoformat() if start_date else None,
+        'end_date': end_date.isoformat() if end_date else None,
+        'total_students': total_students
+    }
+
+def get_total_classes(course_code, start_date=None, end_date=None):
+    """Helper function to get total classes consistently"""
+    query = Attendance.query.filter(
+        Attendance.student_id.in_([s._id for s in Teacher.query.get(course_code).students])
+    )
+    if start_date:
+        query = query.filter(Attendance.class_date >= start_date)
+    if end_date:
+        query = query.filter(Attendance.class_date <= end_date)
+    return query.distinct(Attendance.class_date).count()

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services import get_teacher_courses, get_course_students, mark_attendance, get_student_attendance_stats
+from services import get_teacher_courses, get_course_students, mark_attendance, get_student_attendance_stats, get_course_attendance_stats
 from datetime import datetime
 
 # Create a Blueprint
@@ -65,6 +65,27 @@ def get_attendance_stats(student_id):
             end_date = datetime.fromisoformat(end_date)
         
         stats = get_student_attendance_stats(student_id, start_date, end_date)
+        return jsonify(stats), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Return attendance record for a course
+@teacher_bp.route('/attendance/stats/course/<course_code>', methods=['GET'])
+def get_attendance_stats_for_course(course_code):
+    """Get attendance statistics for a course"""
+    try:
+        # Parse date parameters if provided
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        if start_date:
+            start_date = datetime.fromisoformat(start_date)
+        if end_date:
+            end_date = datetime.fromisoformat(end_date)
+        
+        stats = get_course_attendance_stats(course_code, start_date, end_date)
         return jsonify(stats), 200
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
