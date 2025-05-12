@@ -141,6 +141,68 @@ Retrieves attendance statistics for an entire course.
 }
 ```
 
+### 7. Get Low Attendance Students
+```http
+GET /attendance/{course_code}/low
+```
+Retrieves list of students with attendance below 75% in a course.
+
+**Path Parameters:**
+- `course_code` (required): Code of the course
+
+**Query Parameters:**
+- `start_date` (optional): Start date in ISO format
+- `end_date` (optional): End date in ISO format
+
+**Response:**
+```json
+{
+    "course_code": "string",
+    "total_classes": number,
+    "students_with_low_attendance": [
+        {
+            "student_id": "string",
+            "attendance_percentage": number
+        }
+    ],
+    "total_students": number,
+    "start_date": "string (ISO format)",
+    "end_date": "string (ISO format)"
+}
+```
+
+### 8. Get Course Attendance Percentage
+```http
+GET /attendance/stats/course/{course_code}/percentage
+```
+Retrieves detailed attendance percentage for each student in a course.
+
+**Path Parameters:**
+- `course_code` (required): Code of the course
+
+**Query Parameters:**
+- `start_date` (optional): Start date in ISO format
+- `end_date` (optional): End date in ISO format
+
+**Response:**
+```json
+{
+    "course_code": "string",
+    "total_students": number,
+    "start_date": "string (ISO format)",
+    "end_date": "string (ISO format)",
+    "students": [
+        {
+            "student_name": "string",
+            "roll_no": "string",
+            "attendance_percentage": number,
+            "attended_classes": number
+        }
+    ],
+    "total_classes": number
+}
+```
+
 ## Data Models
 
 ### Teacher
@@ -204,3 +266,5 @@ All endpoints may return the following error responses:
 - Roll numbers are 12 characters long
 - Student names are up to 70 characters long
 - Teacher/TA emails are up to 50 characters long
+- Attendance percentage is calculated as (attended_classes / total_classes * 100)
+- Low attendance is defined as attendance percentage below 75%
