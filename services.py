@@ -182,7 +182,8 @@ def get_low_attendance_students(course_code, start_date=None, end_date=None):
         
         if percentage < 75:
             low_attendance.append({
-                'student_id': student._id,
+                'student_name': student.name,
+                'student_roll_no': student.roll_no,
                 'attendance_percentage': round(percentage, 2)
             })
 
