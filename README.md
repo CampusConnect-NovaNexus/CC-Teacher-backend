@@ -203,6 +203,64 @@ Retrieves detailed attendance percentage for each student in a course.
 }
 ```
 
+### 9. Add TA to Course
+```http
+POST /courses/{course_code}/ta
+```
+Adds a TA to a course.
+
+**Path Parameters:**
+- `course_code` (required): Code of the course
+
+**Request Body:**
+```json
+{
+    "ta_email": "string"
+}
+```
+
+**Response:**
+```json
+{
+    "course_code": "string",
+    "Teacher": ["string"],
+    "TA": ["string"],
+    "total_classes": number
+}
+```
+
+**Error Responses:**
+- 400 if `ta_email` is missing or TA already exists or course not found.
+
+### 10. Remove TA from Course
+```http
+DELETE /courses/{course_code}/ta
+```
+Removes a TA from a course.
+
+**Path Parameters:**
+- `course_code` (required): Code of the course
+
+**Request Body:**
+```json
+{
+    "ta_email": "string"
+}
+```
+
+**Response:**
+```json
+{
+    "course_code": "string",
+    "Teacher": ["string"],
+    "TA": ["string"],
+    "total_classes": number
+}
+```
+
+**Error Responses:**
+- 400 if `ta_email` is missing or TA not found or course not found.
+
 ## Data Models
 
 ### Teacher

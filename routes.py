@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services import get_teacher_courses, get_course_students, mark_attendance, get_student_attendance_stats, get_course_attendance_stats, get_low_attendance_students, get_total_classes
-from datetime import datetime
+from services import *
 from sqlalchemy import func
 from models import *
 
@@ -23,7 +22,25 @@ def get_courses():
         return jsonify(courses), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+# Add student in a course
+@teacher_bp.route('/courses/<course_code>/students', methods=['POST'])
+def add_student(course_code):
+    """Add a student to a course"""
+    data = request.get_json()
+    
+    if not data or 'name' not in data or 'roll_no' not in data:
+        return jsonify({'error': 'student details are required'}), 400
+    
+    student_name = data['name']
+    student_roll_no = data['roll_no']
 
+    try:
+        # Add student to course
+        add_student_to_course(student_name, student_roll_no, course_code)
+        return jsonify({'message': 'Student added to course'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 @teacher_bp.route('/courses/<course_code>/students', methods=['GET'])
 def get_students(course_code):
     """Get all students enrolled in a course"""
@@ -190,3 +207,29 @@ def get_course_attendance_percentage_students(course_code):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@teacher_bp.route('/courses/<course_code>/ta', methods=['POST'])
+def add_ta(course_code):
+    """Add a TA to a course"""
+    data = request.get_json()
+    if not data or 'ta_email' not in data:
+        return jsonify({'error': 'ta_email is required'}), 400
+    ta_email = data['ta_email']
+    try:
+        updated_course = add_ta_to_course(course_code, ta_email)
+        return jsonify(updated_course), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@teacher_bp.route('/courses/<course_code>/ta', methods=['DELETE'])
+def delete_ta(course_code):
+    """Remove a TA from a course"""
+    data = request.get_json()
+    if not data or 'ta_email' not in data:
+        return jsonify({'error': 'ta_email is required'}), 400
+    ta_email = data['ta_email']
+    try:
+        updated_course = remove_ta_from_course(course_code, ta_email)
+        return jsonify(updated_course), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400

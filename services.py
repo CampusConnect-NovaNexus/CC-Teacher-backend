@@ -17,6 +17,17 @@ def get_course_students(course_code):
     students = Student.query.filter_by(course_code=course_code).all()
     return [student.json() for student in students]
 
+# Add student to a course
+def add_student_to_course(student_name, student_roll_no, course_code):
+    """Add a student to a course"""
+    new_student = Student(
+        name=student_name,
+        roll_no=student_roll_no,
+        course_code=course_code
+    )
+    db.session.add(new_student)
+    db.session.commit()
+    
 def mark_attendance(course_code, roll_numbers):
     """Mark attendance for multiple students in a course"""
     current_time = datetime.now(timezone.utc)
@@ -238,3 +249,25 @@ def get_course_attendance_percentage(course_code, start_date=None, end_date=None
         'end_date': end_date.isoformat() if end_date else None,
         'total_students': total_students
     }
+
+def add_ta_to_course(course_code, ta_email):
+    """Add a TA to a course"""
+    course = Teacher.query.get(course_code)
+    if not course:
+        raise ValueError(f"Course {course_code} not found")
+    if ta_email in course.TA:
+        raise ValueError(f"TA {ta_email} already exists for course {course_code}")
+    course.TA.append(ta_email)
+    db.session.commit()
+    return course.json()
+
+def remove_ta_from_course(course_code, ta_email):
+    """Remove a TA from a course"""
+    course = Teacher.query.get(course_code)
+    if not course:
+        raise ValueError(f"Course {course_code} not found")
+    if ta_email not in course.TA:
+        raise ValueError(f"TA {ta_email} not found in course {course_code}")
+    course.TA.remove(ta_email)
+    db.session.commit()
+    return course.json()
