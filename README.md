@@ -1,9 +1,24 @@
-# Teacher Backend API Documentation
+# Teacher Service - CampusConnect
 
-This document provides detailed information about the Teacher Backend API endpoints, their request/response formats, and data models.
+This service handles the teacher-specific functionality for the CampusConnect platform, including course management, student attendance tracking, and teaching assistant (TA) administration.
+
+## Technologies
+- Python 3.x
+- Flask (Web Framework)
+- PostgreSQL with SQLAlchemy ORM
+- Flask-Migrate (Database Migrations)
+- Waitress (Production WSGI Server) 
+- Docker for containerization
+
+## Features
+- Attendance tracking and management
+- Course management for teachers
+- TA administration
+- Low attendance detection and reporting
+- Attendance statistics and analytics
 
 ## Base URL
-All API endpoints are relative to the base URL of the teacher backend service.
+All API endpoints are prefixed with `/api/teacher`
 
 ## API Endpoints
 
