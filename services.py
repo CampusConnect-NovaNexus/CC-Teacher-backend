@@ -257,7 +257,7 @@ def add_ta_to_course(course_code, ta_email):
         raise ValueError(f"Course {course_code} not found")
     if ta_email in course.TA:
         raise ValueError(f"TA {ta_email} already exists for course {course_code}")
-    course.TA.append(ta_email)
+    course.TA = course.TA + [ta_email]
     db.session.commit()
     return course.json()
 
@@ -268,6 +268,6 @@ def remove_ta_from_course(course_code, ta_email):
         raise ValueError(f"Course {course_code} not found")
     if ta_email not in course.TA:
         raise ValueError(f"TA {ta_email} not found in course {course_code}")
-    course.TA.remove(ta_email)
+    course.TA = [email for email in course.TA if email != ta_email]
     db.session.commit()
     return course.json()
